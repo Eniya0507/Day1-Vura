@@ -1,7 +1,8 @@
 "use client"
 
 import Link from 'next/link'
-import { ArrowRight, ShieldCheck, Zap, Cloud, LayoutDashboard, CheckCircle, ChevronRight, Github, Twitter, Linkedin, Mail, User, LogOut, Menu, X, Key, Activity, Search, QrCode, FileSpreadsheet, FileText, Sparkles, Database } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowRight, ShieldCheck, Zap, Cloud, LayoutDashboard, CheckCircle, Github, Twitter, Linkedin, Mail, User, LogOut, Menu, X, Key, Activity, Search, QrCode, FileSpreadsheet, FileText, Sparkles } from 'lucide-react'
 import { motion, useScroll, useTransform, AnimatePresence, Variants } from "framer-motion"
 import { useEffect, useState, useRef } from 'react'
 import { signOut } from "next-auth/react"
@@ -37,6 +38,7 @@ const STEPS = [
     { n: "04", icon: Sparkles, title: "Generate & Share", desc: "Click Generate. Vura builds, uploads to S3, and returns direct PDF + verify links instantly." },
 ]
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function LandingContent({ session }: { session: any }) {
     const [isProfileOpen, setIsProfileOpen] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -84,7 +86,7 @@ export default function LandingContent({ session }: { session: any }) {
                 className="fixed top-0 z-50 w-full backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2 group">
-                        <img src="/vuralogo.png" alt="Vura Logo" className="w-10 h-10 object-contain transition-transform group-hover:scale-105" />
+                        <Image src="/vuralogo.png" alt="Vura Logo" width={40} height={40} className="object-contain transition-transform group-hover:scale-105" />
                         <span className="text-xl font-black tracking-widest uppercase text-white">VURA</span>
                     </Link>
 
@@ -128,7 +130,7 @@ export default function LandingContent({ session }: { session: any }) {
                                 <div className="relative" ref={profileRef}>
                                     <button onClick={() => setIsProfileOpen(!isProfileOpen)}
                                         className="w-9 h-9 rounded-full bg-[var(--color-neon-surface)] border border-[var(--color-neon-border)] flex items-center justify-center overflow-hidden hover:border-[var(--color-neon-primary)] transition-all focus:outline-none">
-                                        {session.user?.image ? <img src={session.user.image} alt="User" className="w-full h-full object-cover" /> : <User className="w-4 h-4 text-[var(--color-neon-muted)]" />}
+                                        {session.user?.image ? <Image src={session.user.image} alt="User" width={36} height={36} className="w-full h-full object-cover" /> : <User className="w-4 h-4 text-[var(--color-neon-muted)]" />}
                                     </button>
                                     <AnimatePresence>
                                         {isProfileOpen && (
@@ -169,6 +171,7 @@ export default function LandingContent({ session }: { session: any }) {
                                 <a href="#features" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-white py-1">Features</a>
                                 <a href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-white py-1">How It Works</a>
                                 <a href="#pricing" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-white py-1">Pricing</a>
+                                <Link href="/docs" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-white py-1">API Docs</Link>
                                 {!session && (
                                     <div className="flex flex-col gap-3 pt-3 border-t border-[var(--color-neon-border)]">
                                         <Link href="/login" className="text-center py-2 text-white bg-white/5 rounded-xl">Sign In</Link>
@@ -572,7 +575,7 @@ export default function LandingContent({ session }: { session: any }) {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12 mb-16">
                         <div className="col-span-2 flex flex-col items-start">
                             <Link href="/" className="flex items-center gap-2 mb-6 w-fit group">
-                                <img src="/vuralogo.png" alt="Vura Logo" className="w-8 h-8 object-contain transition-transform group-hover:scale-110" />
+                                <Image src="/vuralogo.png" alt="Vura Logo" width={32} height={32} className="object-contain transition-transform group-hover:scale-110" />
                                 <span className="text-lg font-bold tracking-widest uppercase text-white">Vura</span>
                             </Link>
                             <p className="text-[13px] text-[var(--color-neon-muted)] leading-relaxed max-w-xs mb-6">
