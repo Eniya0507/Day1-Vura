@@ -11,7 +11,7 @@ export async function POST(req: Request) {
         const parsed = registerSchema.safeParse(body);
 
         if (!parsed.success) {
-            const error = parsed.error.errors[0].message;
+            const error = parsed.error.issues[0].message;
             return NextResponse.json({ error }, { status: 400 });
         }
 
