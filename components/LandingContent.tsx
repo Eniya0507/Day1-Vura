@@ -51,6 +51,7 @@ export default function LandingContent({ session }: { session: any }) {
         offset: ["start 60%", "end 40%"]
     })
     const router = useRouter()
+    const closeMobileMenu = () => setIsMobileMenuOpen(false)
 
     useEffect(() => {
         return howItWorksScrollProgress.on("change", (latest) => {
@@ -83,15 +84,15 @@ export default function LandingContent({ session }: { session: any }) {
             <motion.header style={{ backgroundColor: navBg, borderBottomColor: navBorder, borderBottomWidth: 1, borderBottomStyle: 'solid' }}
                 className="fixed top-0 z-50 w-full backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2 group">
+                    <Link href="/" aria-label="Vura home" className="flex items-center gap-2 group cursor-pointer shrink-0">
                         <img src="/vuralogo.png" alt="Vura Logo" className="w-10 h-10 object-contain transition-transform group-hover:scale-105" />
                         <span className="text-xl font-black tracking-widest uppercase text-white">VURA</span>
                     </Link>
 
                     <nav className="hidden md:flex items-center gap-8 text-sm text-[var(--color-neon-muted)]">
-                        <a href="#features" className="hover:text-white transition-colors">Features</a>
-                        <a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a>
-                        <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+                        <Link href="#features" className="hover:text-white transition-colors">Features</Link>
+                        <Link href="#how-it-works" className="hover:text-white transition-colors">How It Works</Link>
+                        <Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link>
                         <Link href="/docs" className="text-[var(--color-neon-primary)] hover:text-white transition-colors">API Docs</Link>
                     </nav>
 
@@ -166,20 +167,20 @@ export default function LandingContent({ session }: { session: any }) {
                         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
                             className="md:hidden bg-[rgba(3,3,3,0.97)] backdrop-blur-xl border-b border-[var(--color-neon-border)] overflow-hidden">
                             <nav className="flex flex-col px-6 py-4 gap-4 text-sm text-[var(--color-neon-muted)]">
-                                <a href="#features" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-white py-1">Features</a>
-                                <a href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-white py-1">How It Works</a>
-                                <a href="#pricing" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-white py-1">Pricing</a>
+                                <Link href="#features" onClick={closeMobileMenu} className="hover:text-white py-1">Features</Link>
+                                <Link href="#how-it-works" onClick={closeMobileMenu} className="hover:text-white py-1">How It Works</Link>
+                                <Link href="#pricing" onClick={closeMobileMenu} className="hover:text-white py-1">Pricing</Link>
                                 <Link
                                     href="/docs"
-                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    onClick={closeMobileMenu}
                                     className="text-[var(--color-neon-primary)] hover:text-white py-1 transition-colors"
                                 >
                                     API Docs
                                 </Link>
                                 {!session && (
                                     <div className="flex flex-col gap-3 pt-3 border-t border-[var(--color-neon-border)]">
-                                        <Link href="/login" className="text-center py-2 text-white bg-white/5 rounded-xl">Sign In</Link>
-                                        <Link href="/register" className="btn-primary py-2.5 text-center justify-center">Get Started</Link>
+                                        <Link href="/login" onClick={closeMobileMenu} className="text-center py-2 text-white bg-white/5 rounded-xl">Sign In</Link>
+                                        <Link href="/register" onClick={closeMobileMenu} className="btn-primary py-2.5 text-center justify-center">Get Started</Link>
                                     </div>
                                 )}
                             </nav>
@@ -578,7 +579,7 @@ export default function LandingContent({ session }: { session: any }) {
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12 mb-16">
                         <div className="col-span-2 flex flex-col items-start">
-                            <Link href="/" className="flex items-center gap-2 mb-6 w-fit group">
+                            <Link href="/" aria-label="Vura home" className="flex items-center gap-2 mb-6 w-fit group cursor-pointer">
                                 <img src="/vuralogo.png" alt="Vura Logo" className="w-8 h-8 object-contain transition-transform group-hover:scale-110" />
                                 <span className="text-lg font-bold tracking-widest uppercase text-white">Vura</span>
                             </Link>

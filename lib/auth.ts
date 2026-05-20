@@ -14,6 +14,11 @@ import {
 
 export const authOptions: NextAuthOptions = {
     adapter: PrismaAdapter(prisma) as any,
+    secret: process.env.NEXTAUTH_SECRET,
+    pages: {
+        signIn: "/login",
+        error: "/login",
+    },
 
     providers: [
         GoogleProvider({
@@ -54,23 +59,28 @@ export const authOptions: NextAuthOptions = {
 
                 const blockStatus = isBlocked(rateLimitKey);
                 if (blockStatus.blocked) {
-                    return null;
+                    throw new Error("Too many failed login attempts. Please try again later.");
                 }
 
                 const user = await prisma.user.findUnique({
                     where: { email: parsed.data.email },
                 });
 
-                if (!user || !user.password) {
+                if (!user) {
                     recordFailedAttempt(rateLimitKey);
-                    return null;
+                    throw new Error("User not found");
+                }
+
+                if (!user.password) {
+                    recordFailedAttempt(rateLimitKey);
+                    throw new Error("This account uses Google sign-in. Please continue with Google.");
                 }
 
                 const isPasswordValid = await bcrypt.compare(parsed.data.password, user.password);
 
                 if (!isPasswordValid) {
                     recordFailedAttempt(rateLimitKey);
-                    return null;
+                    throw new Error("Invalid password");
                 }
 
                 clearFailedAttempts(rateLimitKey);

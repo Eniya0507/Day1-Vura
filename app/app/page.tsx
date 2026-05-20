@@ -195,24 +195,24 @@ export default function Dashboard() {
             <div className="glow-bg" style={{ top: '10%' }}></div>
 
             {/* Header Navbar Layer */}
-            <div className="w-full max-w-6xl mb-6 flex items-center justify-between relative z-20">
-                <Link href="/" className="text-xl font-black tracking-widest uppercase flex items-center gap-2 text-white">
-                    <Image src="/vuralogo.png" alt="Vura Logo" width={32} height={32} className="rounded-lg object-contain" />
+            <div className="w-full max-w-6xl mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between relative z-20">
+                <Link href="/" className="text-xl font-black tracking-widest uppercase inline-flex items-center gap-2 text-white shrink-0 whitespace-nowrap w-fit">
+                    <Image src="/vuralogo.png" alt="Vura Logo" width={32} height={32} className="rounded-lg object-contain shrink-0" />
                     VURA
                 </Link>
-                <div className="flex gap-4 items-center">
-                    <Link href="/" className="btn-secondary py-2 px-4 flex items-center gap-2 text-sm">
+                <div className="flex w-full flex-wrap items-stretch gap-2 sm:w-auto sm:flex-nowrap sm:items-center sm:justify-end sm:gap-3">
+                    <Link href="/" className="btn-secondary basis-[calc(50%-0.25rem)] min-w-0 flex items-center justify-center gap-2 px-3 py-2 text-sm whitespace-nowrap sm:basis-auto sm:px-4 sm:flex-none">
                         <Home className="w-4 h-4" /> Home
                     </Link>
-                    <Link href="/dashboard" className="btn-secondary py-2 px-4 flex items-center gap-2 text-sm">
+                    <Link href="/dashboard" className="btn-secondary basis-[calc(50%-0.25rem)] min-w-0 flex items-center justify-center gap-2 px-3 py-2 text-sm whitespace-nowrap sm:basis-auto sm:px-4 sm:flex-none">
                         <LayoutDashboard className="w-4 h-4" /> Gallery
                     </Link>
                     {status === 'authenticated' ? (
-                        <Link href="/api/auth/signout" className="btn-secondary py-2 px-4 flex items-center gap-2 text-sm text-red-400 hover:text-red-300 hover:border-red-400">
+                        <Link href="/api/auth/signout" className="btn-secondary basis-full min-w-0 flex items-center justify-center gap-2 px-3 py-2 text-sm whitespace-nowrap text-red-400 hover:text-red-300 hover:border-red-400 sm:basis-auto sm:px-4 sm:flex-none">
                             <LogOut className="w-4 h-4" /> Sign Out
                         </Link>
                     ) : (
-                        <Link href="/login" className="btn-primary py-2 px-4 flex items-center gap-2 text-sm">
+                        <Link href="/login" className="btn-primary basis-full min-w-0 flex items-center justify-center gap-2 px-3 py-2 text-sm whitespace-nowrap sm:basis-auto sm:px-4 sm:flex-none">
                             Login
                         </Link>
                     )}

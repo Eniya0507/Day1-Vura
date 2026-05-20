@@ -47,6 +47,15 @@ export async function POST(req: Request) {
         );
     } catch (error) {
         console.error("Registration error:", error);
+        const message = error instanceof Error ? error.message : "";
+
+        if (/DATABASE_URL|PrismaClientInitializationError|Can't reach database server|Invalid datasource URL/i.test(message)) {
+            return NextResponse.json(
+                { message: "Database is not configured correctly. Check DATABASE_URL and your Prisma connection." },
+                { status: 500 }
+            );
+        }
+
         return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
     }
 }
