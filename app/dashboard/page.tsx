@@ -2,11 +2,17 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowRight, Award, TrendingUp, Calendar, AlertTriangle, ExternalLink, ShieldCheck } from "lucide-react";
 import CertificatesGrid from "@/components/CertificatesGrid";
+import CopyLinkButton from "@/components/CopyLinkButton";
 
 export default async function DashboardPage() {
     const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+        redirect("/login");
+    }
 
     const certificates = await prisma.certificate.findMany({
         where: { userId: session!.user.id },
@@ -112,11 +118,17 @@ export default async function DashboardPage() {
                                         </td>
                                         <td>
                                             <div className="flex items-center justify-end gap-2">
+                                                {/* COPY LINK BUTTON - GSSoC 2026 Feature */}
+                                                <CopyLinkButton url={`https://vurakit.vercel.app/verify/${cert.certificateId}`} />
+
+                                                {/* View PDF Button */}
                                                 <a href={cert.pdfUrl} target="_blank" rel="noreferrer"
                                                     className="p-1.5 text-[var(--color-neon-muted)] hover:text-white hover:bg-white/5 rounded-lg transition-colors"
                                                     title="View PDF">
                                                     <ExternalLink className="w-3.5 h-3.5" />
                                                 </a>
+                                                
+                                                {/* Verify Button */}
                                                 <Link href={`/verify/${cert.certificateId}`} target="_blank"
                                                     className="p-1.5 text-[var(--color-neon-muted)] hover:text-[var(--color-neon-primary)] hover:bg-[var(--color-neon-primary)]/08 rounded-lg transition-colors"
                                                     title="Verify">

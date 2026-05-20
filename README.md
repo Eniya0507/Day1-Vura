@@ -171,6 +171,16 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
+---
+
+## 🚀 GSSoC '26 Project
+**Vura** has been officially selected for **GirlScript Summer of Code 2026**! 🎉  
+Check out our official project details and tracking here: **[Vura on GSSoC Portal](https://gssoc.girlscript.org/projects/omn7%2Fvura)**
+
+> **Note to Contributors:** Please review our [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on issue assignments, tech stack specifications, and design system requirements before opening a Pull Request.
+
+---
+
 ## Author
 
 **Om Narkhede** — [omnarkhede.tech](https://omnarkhede.tech) · [LinkedIn](https://linkedin.com/in/omnarkhede) · [@omn7](https://github.com/omn7)

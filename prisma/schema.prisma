@@ -14,16 +14,25 @@ model Certificate {
   id            String   @id @default(cuid())
   certificateId String   @unique
   name          String
+  recipientEmail String?
   course        String
   issueDate     String
   templateUrl   String
   pdfUrl        String
+  batchId       String?
+  status        String   @default("pending")
+  failureReason String?
+  sentAt        DateTime?
+  updatedAt     DateTime @updatedAt
   revoked       Boolean  @default(false)
   createdAt     DateTime @default(now())
 
   // Relation to User
   user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        String?
+
+  @@index([batchId])
+  @@index([status])
 }
 
 // NextAuth Models

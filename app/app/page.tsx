@@ -22,6 +22,7 @@ export default function Dashboard() {
     const [statusText, setStatusText] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [successCount, setSuccessCount] = useState<number | null>(null);
+    const [batchId, setBatchId] = useState<string | null>(null);
     const [saveToDb, setSaveToDb] = useState(false);
     const [isZipping, setIsZipping] = useState(false);
 
@@ -112,6 +113,7 @@ export default function Dashboard() {
         setLoading(true);
         setError(null);
         setSuccessCount(null);
+        setBatchId(null);
         setCertificates([]);
         setStatusText("Uploading and processing files...");
 
@@ -135,6 +137,7 @@ export default function Dashboard() {
 
             setSuccessCount(data.count || 0);
             setCertificates(data.certificates || []);
+            setBatchId(typeof data.batchId === "string" ? data.batchId : null);
             setStatusText(`Successfully generated and uploaded ${data.count} certificates.`);
         } catch (err: unknown) {
             console.error(err);
@@ -509,6 +512,11 @@ export default function Dashboard() {
                                 <div>
                                     <p className="font-semibold text-sm">Success!</p>
                                     <p className="text-sm text-[#00e599]/80">{statusText}</p>
+                                    {batchId && saveToDb ? (
+                                        <Link href={`/dashboard/batches/${batchId}`} className="inline-flex items-center gap-2 mt-3 text-sm font-medium text-[#00e599] hover:underline">
+                                            Open batch dashboard
+                                        </Link>
+                                    ) : null}
                                 </div>
                             </div>
                         )}
