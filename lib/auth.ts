@@ -57,7 +57,6 @@ export const authOptions: NextAuthOptions = {
                 // Validate input shape
                 const parsed = loginSchema.safeParse(credentials);
 
-                if (!user) {
                 if (!parsed.success) {
                     recordFailedAttempt(rateLimitKey);
                     throw new Error(
