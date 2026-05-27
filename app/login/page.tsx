@@ -52,6 +52,9 @@ function LoginContent() {
 
         if (!res?.ok || res?.error) {
             setError(res?.error ? (AUTH_ERROR_MESSAGES[res.error as keyof typeof AUTH_ERROR_MESSAGES] || "Invalid email or password") : "Invalid email or password");
+        if (!res?.ok || res.error) {
+            const errorKey = res?.error ?? "";
+            setError(AUTH_ERROR_MESSAGES[errorKey] || "Invalid email or password");
             setLoading(false);
             return;
         } else {

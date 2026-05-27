@@ -84,6 +84,7 @@ export default function LandingContent({ session }: { session: any }) {
             <motion.header style={{ backgroundColor: navBg, borderBottomColor: navBorder, borderBottomWidth: 1, borderBottomStyle: 'solid' }}
                 className="fixed top-0 z-50 w-full backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-2">
+                <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2 group shrink-0">
                         <img src="/vuralogo.png" alt="Vura Logo" className="w-10 h-10 object-contain transition-transform group-hover:scale-105" />
                         <span className="text-xl font-black tracking-widest uppercase text-white">VURA</span>

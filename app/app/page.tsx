@@ -257,6 +257,7 @@ export default function Dashboard() {
                                     <input
                                         type="file"
                                         accept=".xlsx, .xls, .csv"
+                                        accept=".xlsx,.xls,.csv"
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                         onChange={(e) => setExcelFile(e.target.files?.[0] || null)}
                                     />
@@ -264,6 +265,7 @@ export default function Dashboard() {
                                         <FileSpreadsheet className="w-6 h-6 mb-2 text-[var(--color-neon-secondary)]" />
                                         <span className="text-xs">
                                             {excelFile ? <span className="text-[var(--color-neon-secondary)] truncate max-w-[120px] block">{excelFile.name}</span> : "Browse Excel/CSV"}
+                                            {excelFile ? <span className="text-[var(--color-neon-secondary)] truncate max-w-[120px] block">{excelFile.name}</span> : "Browse Excel / CSV"}
                                         </span>
                                     </div>
                                 </div>

@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
 
         const templateFile = formData.get("template") as File | null;
         const datasetFile = formData.get("dataset") as File | null;
+        const eventIdString = formData.get("eventId") as string | null;
 
         if (!templateFile || !datasetFile) {
             return NextResponse.json({ error: "Missing template or dataset file." }, { status: 400 });
@@ -49,17 +50,73 @@ export async function POST(req: NextRequest) {
 
         // Extract settings payload before parsing to know which columns are required
         const settingsString = formData.get("settings") as string | null;
+<<<<<<< HEAD
+// Extract settings payload before parsing to know which columns are required
+const settingsString = formData.get("settings") as string | null;
+
+let settings: Record<string, any> | null = null;
+
+if (settingsString) {
+    try {
+        settings = JSON.parse(settingsString);
+    } catch {
+        return NextResponse.json(
+            {
+                error:
+                    "Invalid settings JSON. Please provide valid JSON in the settings field.",
+            },
+            { status: 400 }
+        );
+    }
+}
+
+const canvasWidth = 794;
+const canvasHeight = 562;
+
+const toPercentX = (x?: number) =>
+    typeof x === "number" ? (x / canvasWidth) * 100 : 50;
+
+const toPercentY = (y?: number) =>
+    typeof y === "number" ? (y / canvasHeight) * 100 : 50;
+
+// If eventId provided, try to load template from database
+if (eventIdString && session?.user) {
+    try {
+        const event = await prisma.event.findUnique({
+            where: { id: eventIdString },
+            select: { userId: true },
+        });
+            }
+        }
+       
+        
+=======
         let settings: Record<string, any> | null = null;
+
         if (settingsString) {
             try {
                 settings = JSON.parse(settingsString);
             } catch {
                 return NextResponse.json(
-                    { error: "Invalid settings JSON. Please provide valid JSON in the settings field." },
+                    {
+                        error:
+                            "Invalid settings JSON. Please provide valid JSON in the settings field.",
+                    },
                     { status: 400 }
                 );
             }
         }
+
+        const canvasWidth = 794;
+        const canvasHeight = 562;
+
+        const toPercentX = (x?: number) =>
+            typeof x === "number" ? (x / canvasWidth) * 100 : 50;
+
+        const toPercentY = (y?: number) =>
+            typeof y === "number" ? (y / canvasHeight) * 100 : 50;
+>>>>>>> 54777f5 (Merge: combine CSV support with canvas positioning helpers and typed settings)
+
         const saveToDb = formData.get("saveToDb") !== "false";
         const batchId = generateBatchId();
 
@@ -82,33 +139,52 @@ export async function POST(req: NextRequest) {
         const templateBuffer = await templateFile.arrayBuffer();
         const datasetBuffer = await datasetFile.arrayBuffer();
 
-        // 2. Parse Excel dataset
-        const workbook = xlsx.read(datasetBuffer, { type: "buffer" });
+        // 2. Parse dataset (XLSX or CSV)
         const normalizeKey = (key: string) => key.trim().toLowerCase();
+        const datasetName = datasetFile.name.toLowerCase();
 
-        // 3. Find the valid sheet
         let rows: any[] = [];
         let firstRow: any = null;
 
-        for (const sheetName of workbook.SheetNames) {
-            const sheet = workbook.Sheets[sheetName];
-            const sheetRows = xlsx.utils.sheet_to_json<any>(sheet);
-            if (sheetRows.length > 0) {
-                const potentialFirstRow = sheetRows[0];
-                const normalizedKeys = Object.keys(potentialFirstRow).map(normalizeKey);
-
+        if (datasetName.endsWith(".csv")) {
+            // Parse CSV using xlsx
+            const csvText = Buffer.from(datasetBuffer).toString("utf-8");
+            if (!csvText.trim()) {
+                return NextResponse.json({ error: "The CSV file is empty." }, { status: 400 });
+            }
+            const workbook = xlsx.read(csvText, { type: "string" });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const csvRows = xlsx.utils.sheet_to_json<any>(sheet);
+            if (csvRows.length > 0) {
+                const normalizedKeys = Object.keys(csvRows[0]).map(normalizeKey);
                 const hasAllRequiredCols = requiredCols.every(col => normalizedKeys.includes(col));
+                if (!hasAllRequiredCols) {
+                    return NextResponse.json({ error: `CSV is missing required columns: ${requiredColsDisplay.join(", ")}.` }, { status: 400 });
+                }
+                rows = csvRows;
+                firstRow = csvRows[0];
+            }
+        } else {
+            // Parse XLSX/XLS
+            const workbook = xlsx.read(datasetBuffer, { type: "buffer" });
 
-                if (hasAllRequiredCols) {
-                    rows = sheetRows;
-                    firstRow = potentialFirstRow;
-                    break;
+            for (const sheetName of workbook.SheetNames) {
+                const sheet = workbook.Sheets[sheetName];
+                const sheetRows = xlsx.utils.sheet_to_json<any>(sheet);
+                if (sheetRows.length > 0) {
+                    const potentialFirstRow = sheetRows[0];
+                    const normalizedKeys = Object.keys(potentialFirstRow).map(normalizeKey);
+                    if (requiredCols.every(col => normalizedKeys.includes(col))) {
+                        rows = sheetRows;
+                        firstRow = potentialFirstRow;
+                        break;
+                    }
                 }
             }
         }
 
         if (rows.length === 0) {
-            return NextResponse.json({ error: `No sheet containing the required columns (${requiredColsDisplay.join(', ')}) was found.` }, { status: 400 });
+            return NextResponse.json({ error: `No data containing the required columns (${requiredColsDisplay.join(", ")}) was found.` }, { status: 400 });
         }
 
         // 4. Process each row
