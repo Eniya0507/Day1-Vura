@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
             for (const key of fieldKeys) {
                 if (key in s && (typeof s[key] !== "object" || s[key] === null || Array.isArray(s[key]))) {
                     return NextResponse.json(
-                        { error: `Invalid settings: "${key}" must be an object.` },
+                        { error: `Invalid settings: \"${key}\" must be an object.` },
                         { status: 400 }
                     );
                 }
