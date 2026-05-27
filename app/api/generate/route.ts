@@ -53,6 +53,8 @@ export async function POST(req: NextRequest) {
 
         // Extract settings payload before parsing to know which columns are required
         const settingsString = formData.get("settings") as string | null;
+        let settings: Record<string, any> | null = null;
+
         let settings: Settings | null = null;
         if (settingsString) {
             let parsed: unknown;
@@ -60,6 +62,10 @@ export async function POST(req: NextRequest) {
                 parsed = JSON.parse(settingsString);
             } catch {
                 return NextResponse.json(
+                    {
+                        error:
+                            "Invalid settings JSON. Please provide valid JSON in the settings field.",
+                    },
                     { error: "Invalid settings JSON. Please provide valid JSON in the settings field." },
                     { status: 400 }
                 );
@@ -119,6 +125,7 @@ export async function POST(req: NextRequest) {
         const normalizeKey = (key: string) => key.trim().toLowerCase();
         const datasetName = datasetFile.name.toLowerCase();
 
+        let rows: any[] = [];
         // 3. Find the valid sheet
         let rows: Record<string, unknown>[] = [];
 
@@ -133,13 +140,15 @@ export async function POST(req: NextRequest) {
         let rows: Record<string, unknown>[] = [];
 
         if (datasetName.endsWith(".csv")) {
-            // Parse CSV using xlsx
             const csvText = Buffer.from(datasetBuffer).toString("utf-8");
             if (!csvText.trim()) {
                 return NextResponse.json({ error: "The CSV file is empty." }, { status: 400 });
             }
             const workbook = xlsx.read(csvText, { type: "string" });
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const csvRows = xlsx.utils.sheet_to_json<any>(sheet);
+            if (csvRows.length === 0) {
+                return NextResponse.json({ error: "The CSV file contains no data rows." }, { status: 400 });
             const csvRows = xlsx.utils.sheet_to_json<Record<string, unknown>>(sheet);
             if (csvRows.length > 0) {
                 const normalizedKeys = Object.keys(csvRows[0]).map(normalizeKey);
@@ -149,10 +158,13 @@ export async function POST(req: NextRequest) {
                 }
                 rows = csvRows;
             }
+            const normalizedKeys = Object.keys(csvRows[0]).map(normalizeKey);
+            if (!requiredCols.every(col => normalizedKeys.includes(col))) {
+                return NextResponse.json({ error: `CSV is missing required columns: ${requiredColsDisplay.join(", ")}.` }, { status: 400 });
+            }
+            rows = csvRows;
         } else {
-            // Parse XLSX/XLS
             const workbook = xlsx.read(datasetBuffer, { type: "buffer" });
-
             for (const sheetName of workbook.SheetNames) {
                 const sheet = workbook.Sheets[sheetName];
                 const sheetRows = xlsx.utils.sheet_to_json<Record<string, unknown>>(sheet);
