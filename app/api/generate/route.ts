@@ -101,10 +101,8 @@ export async function POST(req: NextRequest) {
         const datasetName = datasetFile.name.toLowerCase();
 
         let rows: any[] = [];
-        let firstRow: any = null;
 
         if (datasetName.endsWith(".csv")) {
-            // Parse CSV using xlsx
             const csvText = Buffer.from(datasetBuffer).toString("utf-8");
             if (!csvText.trim()) {
                 return NextResponse.json({ error: "The CSV file is empty." }, { status: 400 });
@@ -112,28 +110,23 @@ export async function POST(req: NextRequest) {
             const workbook = xlsx.read(csvText, { type: "string" });
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const csvRows = xlsx.utils.sheet_to_json<any>(sheet);
-            if (csvRows.length > 0) {
-                const normalizedKeys = Object.keys(csvRows[0]).map(normalizeKey);
-                const hasAllRequiredCols = requiredCols.every(col => normalizedKeys.includes(col));
-                if (!hasAllRequiredCols) {
-                    return NextResponse.json({ error: `CSV is missing required columns: ${requiredColsDisplay.join(", ")}.` }, { status: 400 });
-                }
-                rows = csvRows;
-                firstRow = csvRows[0];
+            if (csvRows.length === 0) {
+                return NextResponse.json({ error: "The CSV file contains no data rows." }, { status: 400 });
             }
+            const normalizedKeys = Object.keys(csvRows[0]).map(normalizeKey);
+            if (!requiredCols.every(col => normalizedKeys.includes(col))) {
+                return NextResponse.json({ error: `CSV is missing required columns: ${requiredColsDisplay.join(", ")}.` }, { status: 400 });
+            }
+            rows = csvRows;
         } else {
-            // Parse XLSX/XLS
             const workbook = xlsx.read(datasetBuffer, { type: "buffer" });
-
             for (const sheetName of workbook.SheetNames) {
                 const sheet = workbook.Sheets[sheetName];
                 const sheetRows = xlsx.utils.sheet_to_json<any>(sheet);
                 if (sheetRows.length > 0) {
-                    const potentialFirstRow = sheetRows[0];
-                    const normalizedKeys = Object.keys(potentialFirstRow).map(normalizeKey);
+                    const normalizedKeys = Object.keys(sheetRows[0]).map(normalizeKey);
                     if (requiredCols.every(col => normalizedKeys.includes(col))) {
                         rows = sheetRows;
-                        firstRow = potentialFirstRow;
                         break;
                     }
                 }
