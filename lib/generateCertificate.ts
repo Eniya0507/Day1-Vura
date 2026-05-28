@@ -113,7 +113,7 @@ export async function generateCertificate(
 
     // Add QR Code
     if (!settings || settings?.qrCode?.enabled) {
-        const baseUrl = baseUrlValue || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+        const baseUrl = baseUrlValue ?? process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
         const qrUrl = `${baseUrl}/verify/${data.certificateId}`;
 
         const qrCodeDataUri = await QRCode.toDataURL(qrUrl, { margin: 1 })
