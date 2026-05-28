@@ -4,19 +4,49 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Loader2, AlertCircle, ArrowRight } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
+
+function validate(name: string, email: string, password: string) {
+    const errors: { name?: string; email?: string; password?: string } = {};
+    if (!name.trim()) errors.name = "Full name is required.";
+    if (!email.trim()) {
+        errors.email = "Email address is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errors.email = "Enter a valid email address.";
+    }
+    if (!password) {
+        errors.password = "Password is required.";
+    } else if (password.length < 8) {
+        errors.password = "Password must be at least 8 characters.";
+    } else if (!/[A-Z]/.test(password)) {
+        errors.password = "Password must contain at least one uppercase letter.";
+    } else if (!/[a-z]/.test(password)) {
+        errors.password = "Password must contain at least one lowercase letter.";
+    } else if (!/[0-9]/.test(password)) {
+        errors.password = "Password must contain at least one number.";
+    } else if (!/[^A-Za-z0-9]/.test(password)) {
+        errors.password = "Password must contain at least one special character.";
+    }
+    return errors;
+}
 
 export default function RegisterPage() {
     const router = useRouter();
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-
+    const [fieldErrors, setFieldErrors] = useState<{ name?: string; email?: string; password?: string }>({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
+        const errors = validate(name, email, password);
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors);
+            return;
+        }
+        setFieldErrors({});
         setLoading(true);
         setError("");
 
@@ -30,10 +60,9 @@ export default function RegisterPage() {
             const data = await res.json();
 
             if (!res.ok) {
-                throw new Error(data.message || "Something went wrong.");
+                throw new Error(data.message || "Something went wrong. Please try again.");
             }
 
-            // Successfully registered, send them to login
             router.push("/login?registered=true");
         } catch (err: any) {
             setError(err.message);
@@ -41,6 +70,11 @@ export default function RegisterPage() {
             setLoading(false);
         }
     };
+
+    const fieldClass = (hasError: boolean) =>
+        `w-full mt-1 bg-[var(--color-neon-bg)] border rounded-xl py-3 px-4 focus:ring-2 focus:ring-[var(--color-neon-primary)] outline-none ${
+            hasError ? "border-red-500" : "border-[var(--color-neon-border)]"
+        }`;
 
     return (
         <main className="flex-1 flex flex-col items-center justify-center min-h-screen p-6 relative z-10">
@@ -64,42 +98,44 @@ export default function RegisterPage() {
                     </div>
                 )}
 
-                <form onSubmit={handleRegister} className="w-full flex flex-col gap-4">
+                <form onSubmit={handleRegister} className="w-full flex flex-col gap-4" noValidate>
                     <div className="text-left">
                         <label className="text-xs text-[var(--color-neon-muted)] ml-1">Full Name</label>
                         <input
                             type="text"
-                            required
                             value={name}
-                            onChange={e => setName(e.target.value)}
-                            className="w-full mt-1 bg-[var(--color-neon-bg)] border border-[var(--color-neon-border)] rounded-xl py-3 px-4 focus:ring-2 focus:ring-[var(--color-neon-primary)] outline-none"
+                            onChange={e => { setName(e.target.value); setFieldErrors(p => ({ ...p, name: undefined })); }}
+                            className={fieldClass(!!fieldErrors.name)}
                             placeholder="Your Name"
                         />
+                        {fieldErrors.name && <p className="text-xs text-red-400 mt-1 ml-1">{fieldErrors.name}</p>}
                     </div>
 
                     <div className="text-left">
                         <label className="text-xs text-[var(--color-neon-muted)] ml-1">Email Address</label>
                         <input
                             type="email"
-                            required
                             value={email}
-                            onChange={e => setEmail(e.target.value)}
-                            className="w-full mt-1 bg-[var(--color-neon-bg)] border border-[var(--color-neon-border)] rounded-xl py-3 px-4 focus:ring-2 focus:ring-[var(--color-neon-primary)] outline-none"
+                            onChange={e => { setEmail(e.target.value); setFieldErrors(p => ({ ...p, email: undefined })); }}
+                            className={fieldClass(!!fieldErrors.email)}
                             placeholder="name@example.com"
                         />
+                        {fieldErrors.email && <p className="text-xs text-red-400 mt-1 ml-1">{fieldErrors.email}</p>}
                     </div>
 
                     <div className="text-left">
                         <label className="text-xs text-[var(--color-neon-muted)] ml-1">Password</label>
                         <input
                             type="password"
-                            required
-                            minLength={6}
                             value={password}
-                            onChange={e => setPassword(e.target.value)}
-                            className="w-full mt-1 bg-[var(--color-neon-bg)] border border-[var(--color-neon-border)] rounded-xl py-3 px-4 focus:ring-2 focus:ring-[var(--color-neon-primary)] outline-none"
+                            onChange={e => { setPassword(e.target.value); setFieldErrors(p => ({ ...p, password: undefined })); }}
+                            className={fieldClass(!!fieldErrors.password)}
                             placeholder="••••••••"
                         />
+                        {fieldErrors.password
+                            ? <p className="text-xs text-red-400 mt-1 ml-1">{fieldErrors.password}</p>
+                            : <p className="text-xs text-[var(--color-neon-muted)] mt-1 ml-1">Min 8 chars, uppercase, lowercase, number &amp; special character.</p>
+                        }
                     </div>
 
                     <button
