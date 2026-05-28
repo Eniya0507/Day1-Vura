@@ -13,7 +13,7 @@ export const passwordSchema = z
 export const registerSchema = z.object({
     email: emailSchema,
     password: passwordSchema,
-    name: z.string().optional(),
+    name: z.string().min(1, "Full name is required"),
 });
 
 export const loginSchema = z.object({
