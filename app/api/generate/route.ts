@@ -269,7 +269,7 @@ export async function POST(req: NextRequest) {
                             recipientEmail,
                             recipientName: certData.name,
                             certificateId,
-                            verifyUrl: `${dynamicBaseUrl || "http://localhost:3000"}/verify/${certificateId}`,
+                            verifyUrl: `${dynamicBaseUrl ?? `${protocol}://localhost:3000`}/verify/${certificateId}`,
                         });
 
                         const sentRecord = await prisma.certificate.update({
