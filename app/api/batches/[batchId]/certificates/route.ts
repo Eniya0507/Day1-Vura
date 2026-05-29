@@ -16,37 +16,42 @@ export async function GET(req: NextRequest, context: { params: Promise<{ batchId
     const search = (searchParams.get("search") ?? "").trim();
     const status = (searchParams.get("status") ?? "").trim();
 
-    const certificates = await prisma.certificate.findMany({
-        where: {
-            batchId,
-            userId: session.user.id,
-            ...(status ? { status } : {}),
-            ...(search
-                ? {
-                      OR: [
-                          { name: { contains: search, mode: "insensitive" } },
-                          { recipientEmail: { contains: search, mode: "insensitive" } },
-                          { certificateId: { contains: search, mode: "insensitive" } },
-                      ],
-                  }
-                : {}),
-        },
-        orderBy: { updatedAt: "desc" },
-        select: {
-            id: true,
-            certificateId: true,
-            name: true,
-            recipientEmail: true,
-            course: true,
-            issueDate: true,
-            pdfUrl: true,
-            status: true,
-            failureReason: true,
-            updatedAt: true,
-            sentAt: true,
-            batchId: true,
-        },
-    });
+    try {
+        const certificates = await prisma.certificate.findMany({
+            where: {
+                batchId,
+                userId: session.user.id,
+                ...(status ? { status } : {}),
+                ...(search
+                    ? {
+                          OR: [
+                              { name: { contains: search, mode: "insensitive" } },
+                              { recipientEmail: { contains: search, mode: "insensitive" } },
+                              { certificateId: { contains: search, mode: "insensitive" } },
+                          ],
+                      }
+                    : {}),
+            },
+            orderBy: { updatedAt: "desc" },
+            select: {
+                id: true,
+                certificateId: true,
+                name: true,
+                recipientEmail: true,
+                course: true,
+                issueDate: true,
+                pdfUrl: true,
+                status: true,
+                failureReason: true,
+                updatedAt: true,
+                sentAt: true,
+                batchId: true,
+            },
+        });
 
-    return NextResponse.json(certificates, { status: 200 });
+        return NextResponse.json(certificates, { status: 200 });
+    } catch (error) {
+        console.error("Failed to fetch batch certificates:", error);
+        return NextResponse.json({ error: "Failed to fetch certificates" }, { status: 500 });
+    }
 }
