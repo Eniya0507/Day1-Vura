@@ -11,8 +11,60 @@ import {
     getRateLimitKey,
     isBlocked,
     recordFailedAttempt,
-    AUTH_RATE_LIMIT_MESSAGE,
 } from "@/lib/rate-limit";
+
+async function authorize(
+    credentials: Record<string, string> | undefined,
+    req: any
+) {
+    if (!credentials || !credentials.email || !credentials.password) {
+        return null;
+    }
+
+    const forwardedFor = req?.headers?.["x-forwarded-for"];
+    const ip = Array.isArray(forwardedFor)
+        ? forwardedFor[0]
+        : forwardedFor?.split(",")[0] || "unknown";
+
+    const rateLimitKey = `${ip}:${credentials.email}`;
+
+    const blockStatus = isBlocked(rateLimitKey);
+    if (blockStatus.blocked) {
+        throw new Error("Too many failed login attempts. Please try again later.");
+    }
+
+    // Validate input shape
+    const parsed = loginSchema.safeParse(credentials);
+
+    if (!parsed.success) {
+        recordFailedAttempt(rateLimitKey);
+        throw new Error(
+            parsed.error.issues[0].message
+        );
+    }
+
+    const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+    if (!user || !user.password) {
+        recordFailedAttempt(rateLimitKey);
+        throw new Error("User not found");
+    }
+
+    if (!user.password) {
+        recordFailedAttempt(rateLimitKey);
+        throw new Error("This account uses Google sign-in. Please continue with Google.");
+    }
+
+    const isPasswordValid = await bcrypt.compare(parsed.data.password, user.password);
+    if (!isPasswordValid) {
+        recordFailedAttempt(rateLimitKey);
+        throw new Error("Invalid password");
+    }
+
+    clearFailedAttempts(rateLimitKey);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return user as any;
+}
 
 export const authOptions: NextAuthOptions = {
     adapter: PrismaAdapter(prisma) as any,
@@ -36,56 +88,7 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" },
             },
 
-            authorize: async (credentials, req) => {
-                if (!credentials || !credentials.email || !credentials.password) {
-                    return null;
-                }
-
-                const forwardedFor = req?.headers?.["x-forwarded-for"];
-                const ip = Array.isArray(forwardedFor)
-                    ? forwardedFor[0]
-                    : forwardedFor?.split(",")[0] || "unknown";
-
-                const rateLimitKey = `${ip}:${credentials.email}`;
-
-                const blockStatus = isBlocked(rateLimitKey);
-                if (blockStatus.blocked) {
-                    throw new Error("Too many failed login attempts. Please try again later.");
-                }
-                if (blockStatus.blocked) return null;
-
-                // Validate input shape
-                const parsed = loginSchema.safeParse(credentials);
-
-                if (!parsed.success) {
-                    recordFailedAttempt(rateLimitKey);
-                    throw new Error(
-                        parsed.error.issues[0].message
-                    );
-                }
-
-                const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
-                if (!user || !user.password) {
-                    recordFailedAttempt(rateLimitKey);
-                    throw new Error("User not found");
-                }
-
-                if (!user.password) {
-                    recordFailedAttempt(rateLimitKey);
-                    throw new Error("This account uses Google sign-in. Please continue with Google.");
-                }
-
-                const isPasswordValid = await bcrypt.compare(parsed.data.password, user.password);
-                if (!isPasswordValid) {
-                    recordFailedAttempt(rateLimitKey);
-                    throw new Error("Invalid password");
-                }
-
-                clearFailedAttempts(rateLimitKey);
-
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                return user as any;
-            },
+            authorize,
         }),
     ],
 
